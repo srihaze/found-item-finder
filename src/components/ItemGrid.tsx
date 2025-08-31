@@ -1,26 +1,14 @@
 import { ItemCard } from "./ItemCard";
-
-interface Item {
-  id: string;
-  type: string;
-  name: string;
-  description: string;
-  contact: string;
-  place: string;
-  date: string;
-  imageUrl?: string;
-  timestamp: string;
-  resolved?: boolean;
-  resolvedAt?: string;
-}
+import { Item } from "@/hooks/useItems";
 
 interface ItemGridProps {
   items: Item[];
+  loading?: boolean;
   onMarkAsFound?: (itemId: string) => void;
   showResolved?: boolean;
 }
 
-export const ItemGrid = ({ items, onMarkAsFound, showResolved = true }: ItemGridProps) => {
+export const ItemGrid = ({ items, loading = false, onMarkAsFound, showResolved = true }: ItemGridProps) => {
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
@@ -36,7 +24,7 @@ export const ItemGrid = ({ items, onMarkAsFound, showResolved = true }: ItemGrid
   // Filter and sort items
   const filteredItems = showResolved ? items : items.filter(item => !item.resolved);
   const sortedItems = [...filteredItems].sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   return (

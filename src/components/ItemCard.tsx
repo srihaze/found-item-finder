@@ -3,20 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, Phone, Mail } from "lucide-react";
 import { useState } from "react";
-
-interface Item {
-  id: string;
-  type: string;
-  name: string;
-  description: string;
-  contact: string;
-  place: string;
-  date: string;
-  imageUrl?: string;
-  timestamp: string;
-  resolved?: boolean;
-  resolvedAt?: string;
-}
+import { Item } from "@/hooks/useItems";
 
 interface ItemCardProps {
   item: Item;
@@ -46,9 +33,9 @@ export const ItemCard = ({ item, onMarkAsFound }: ItemCardProps) => {
       item.resolved ? 'opacity-75 ring-2 ring-secondary/50' : ''
     }`}>
       <div className="aspect-video bg-muted relative overflow-hidden">
-        {item.imageUrl ? (
+        {item.image_url ? (
           <img 
-            src={item.imageUrl} 
+            src={item.image_url} 
             alt={item.name}
             className={`w-full h-full object-cover ${item.resolved ? 'grayscale-[0.3]' : ''}`}
           />
@@ -80,7 +67,7 @@ export const ItemCard = ({ item, onMarkAsFound }: ItemCardProps) => {
         </div>
         <div className="absolute top-3 right-3">
           <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
-            {getTimeSince(item.timestamp)}
+            {getTimeSince(item.created_at)}
           </Badge>
         </div>
       </div>
@@ -111,7 +98,7 @@ export const ItemCard = ({ item, onMarkAsFound }: ItemCardProps) => {
           <div className="pt-2 border-t space-y-2">
             {item.resolved && (
               <div className="text-xs text-muted-foreground text-center py-1">
-                Marked as resolved {item.resolvedAt ? new Date(item.resolvedAt).toLocaleDateString() : ''}
+                Marked as resolved {item.resolved_at ? new Date(item.resolved_at).toLocaleDateString() : ''}
               </div>
             )}
             

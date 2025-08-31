@@ -1,53 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ItemForm } from "@/components/ItemForm";
 import { ItemGrid } from "@/components/ItemGrid";
 import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
 import campusHero from "@/assets/campus-hero.jpg";
-
-interface Item {
-  id: string;
-  type: string;
-  name: string;
-  description: string;
-  contact: string;
-  place: string;
-  date: string;
-  imageUrl?: string;
-  timestamp: string;
-  resolved?: boolean;
-  resolvedAt?: string;
-}
+import { useItems } from "@/hooks/useItems";
 
 const Index = () => {
-  const [items, setItems] = useState<Item[]>([]);
+  const { items, loading, addItem, markAsFound } = useItems();
   const [showForm, setShowForm] = useState(false);
   const [showResolved, setShowResolved] = useState(true);
 
-  // Load items from localStorage on component mount
-  useEffect(() => {
-    const savedItems = localStorage.getItem('campusLostFound');
-    if (savedItems) {
-      setItems(JSON.parse(savedItems));
+  const handleAddItem = async (newItem: any) => {
+    const result = await addItem(newItem);
+    if (result.success) {
+      setShowForm(false);
     }
-  }, []);
-
-  // Save items to localStorage whenever items change
-  useEffect(() => {
-    localStorage.setItem('campusLostFound', JSON.stringify(items));
-  }, [items]);
-
-  const handleAddItem = (newItem: Item) => {
-    setItems(prev => [newItem, ...prev]);
-    setShowForm(false);
-  };
-
-  const handleMarkAsFound = (itemId: string) => {
-    setItems(prev => prev.map(item => 
-      item.id === itemId 
-        ? { ...item, resolved: true, resolvedAt: new Date().toISOString() }
-        : item
-    ));
   };
 
   return (
@@ -140,8 +108,9 @@ const Index = () => {
             </Button>
           </div>
           <ItemGrid 
-            items={items} 
-            onMarkAsFound={handleMarkAsFound}
+            items={items}
+            loading={loading}
+            onMarkAsFound={markAsFound}
             showResolved={showResolved}
           />
         </section>
