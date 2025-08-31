@@ -10,13 +10,17 @@ interface Item {
   date: string;
   imageUrl?: string;
   timestamp: string;
+  resolved?: boolean;
+  resolvedAt?: string;
 }
 
 interface ItemGridProps {
   items: Item[];
+  onMarkAsFound?: (itemId: string) => void;
+  showResolved?: boolean;
 }
 
-export const ItemGrid = ({ items }: ItemGridProps) => {
+export const ItemGrid = ({ items, onMarkAsFound, showResolved = true }: ItemGridProps) => {
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
@@ -29,8 +33,9 @@ export const ItemGrid = ({ items }: ItemGridProps) => {
     );
   }
 
-  // Sort items by timestamp (newest first)
-  const sortedItems = [...items].sort((a, b) => 
+  // Filter and sort items
+  const filteredItems = showResolved ? items : items.filter(item => !item.resolved);
+  const sortedItems = [...filteredItems].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
@@ -38,21 +43,24 @@ export const ItemGrid = ({ items }: ItemGridProps) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
-          Recent Posts ({items.length})
+          Recent Posts ({sortedItems.length})
         </h2>
-        <div className="flex gap-2 text-sm text-muted-foreground">
+        <div className="flex gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
-            🔍 {items.filter(item => item.type === 'lost').length} Lost
+            🔍 {filteredItems.filter(item => item.type === 'lost' && !item.resolved).length} Lost
           </span>
           <span className="flex items-center gap-1">
-            ✨ {items.filter(item => item.type === 'found').length} Found
+            ✨ {filteredItems.filter(item => item.type === 'found' && !item.resolved).length} Found
+          </span>
+          <span className="flex items-center gap-1">
+            ✅ {items.filter(item => item.resolved).length} Resolved
           </span>
         </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedItems.map((item) => (
-          <ItemCard key={item.id} item={item} />
+          <ItemCard key={item.id} item={item} onMarkAsFound={onMarkAsFound} />
         ))}
       </div>
     </div>

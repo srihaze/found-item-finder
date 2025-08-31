@@ -14,13 +14,16 @@ interface Item {
   date: string;
   imageUrl?: string;
   timestamp: string;
+  resolved?: boolean;
+  resolvedAt?: string;
 }
 
 interface ItemCardProps {
   item: Item;
+  onMarkAsFound?: (itemId: string) => void;
 }
 
-export const ItemCard = ({ item }: ItemCardProps) => {
+export const ItemCard = ({ item, onMarkAsFound }: ItemCardProps) => {
   const [showContact, setShowContact] = useState(false);
   
   const formatDate = (dateString: string) => {
@@ -39,13 +42,15 @@ export const ItemCard = ({ item }: ItemCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-card transition-all duration-200 bg-gradient-card">
+    <Card className={`overflow-hidden hover:shadow-card transition-all duration-200 bg-gradient-card ${
+      item.resolved ? 'opacity-75 ring-2 ring-secondary/50' : ''
+    }`}>
       <div className="aspect-video bg-muted relative overflow-hidden">
         {item.imageUrl ? (
           <img 
             src={item.imageUrl} 
             alt={item.name}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${item.resolved ? 'grayscale-[0.3]' : ''}`}
           />
         ) : (
           <div className="flex items-center justify-center h-full bg-gradient-to-br from-muted to-muted/50">
@@ -55,9 +60,19 @@ export const ItemCard = ({ item }: ItemCardProps) => {
             </div>
           </div>
         )}
+        
+        {/* Resolved overlay */}
+        {item.resolved && (
+          <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center">
+            <div className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full font-semibold text-sm shadow-lg">
+              ✅ Resolved
+            </div>
+          </div>
+        )}
+        
         <div className="absolute top-3 left-3">
           <Badge 
-            variant={item.type === 'lost' ? 'destructive' : 'secondary'}
+            variant={item.resolved ? 'outline' : (item.type === 'lost' ? 'destructive' : 'secondary')}
             className="font-semibold"
           >
             {item.type === 'lost' ? '🔍 Lost' : '✨ Found'}
@@ -93,13 +108,20 @@ export const ItemCard = ({ item }: ItemCardProps) => {
             )}
           </div>
           
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t space-y-2">
+            {item.resolved && (
+              <div className="text-xs text-muted-foreground text-center py-1">
+                Marked as resolved {item.resolvedAt ? new Date(item.resolvedAt).toLocaleDateString() : ''}
+              </div>
+            )}
+            
             {!showContact ? (
               <Button 
                 variant="campus" 
                 size="sm" 
                 onClick={() => setShowContact(true)}
                 className="w-full"
+                disabled={item.resolved}
               >
                 Show Contact Info
               </Button>
@@ -112,6 +134,17 @@ export const ItemCard = ({ item }: ItemCardProps) => {
                 )}
                 <span className="font-medium text-primary">{item.contact}</span>
               </div>
+            )}
+            
+            {!item.resolved && onMarkAsFound && showContact && (
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={() => onMarkAsFound(item.id)}
+                className="w-full"
+              >
+                ✅ Mark as Found
+              </Button>
             )}
           </div>
         </div>

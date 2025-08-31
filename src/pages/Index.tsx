@@ -15,11 +15,14 @@ interface Item {
   date: string;
   imageUrl?: string;
   timestamp: string;
+  resolved?: boolean;
+  resolvedAt?: string;
 }
 
 const Index = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showResolved, setShowResolved] = useState(true);
 
   // Load items from localStorage on component mount
   useEffect(() => {
@@ -37,6 +40,14 @@ const Index = () => {
   const handleAddItem = (newItem: Item) => {
     setItems(prev => [newItem, ...prev]);
     setShowForm(false);
+  };
+
+  const handleMarkAsFound = (itemId: string) => {
+    setItems(prev => prev.map(item => 
+      item.id === itemId 
+        ? { ...item, resolved: true, resolvedAt: new Date().toISOString() }
+        : item
+    ));
   };
 
   return (
@@ -118,7 +129,21 @@ const Index = () => {
 
         {/* Items Section */}
         <section id="items-section">
-          <ItemGrid items={items} />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold">Browse Items</h2>
+            <Button
+              variant="outline"
+              onClick={() => setShowResolved(!showResolved)}
+              className="gap-2"
+            >
+              {showResolved ? '👁️ Hide Resolved' : '👁️ Show Resolved'}
+            </Button>
+          </div>
+          <ItemGrid 
+            items={items} 
+            onMarkAsFound={handleMarkAsFound}
+            showResolved={showResolved}
+          />
         </section>
 
         {/* Stats Section */}
@@ -140,9 +165,9 @@ const Index = () => {
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-accent">
-                {items.filter(item => item.type === 'lost').length}
+                {items.filter(item => item.resolved).length}
               </div>
-              <div className="text-sm text-muted-foreground">Items Lost</div>
+              <div className="text-sm text-muted-foreground">Items Resolved</div>
             </div>
           </div>
         </section>
